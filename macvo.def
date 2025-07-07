@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+%environment
+    export NVIDIA_VISIBLE_DEVICES=all
+    export NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+    export PATH="/home/macvo/.conda/bin:${PATH}"
+
+%post
+    apt-get update
+    apt-get install -y unzip sudo git wget python3-pip 
+    apt-get install -y ffmpeg libsm6 libxext6 libgtk-3-dev libxkbcommon-x11-0 vulkan-tools
+    
+    # Create user
+    useradd -ms /bin/bash macvo
+    echo "macvo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    
+    # Install Python packages
+    pip3 install --upgrade pip
+    pip3 install --no-cache-dir pypose>=0.6.8  
+    pip3 install --no-cache-dir opencv-python-headless evo 
+    pip3 install --no-cache-dir matplotlib tabulate tqdm rich cupy-cuda12x einops 
+    pip3 install --no-cache-dir timm==0.9.12 rerun-sdk==0.23.4 yacs 
+    pip3 install --no-cache-dir numpy>=2.0.0
+    pip3 install --no-cache-dir pyyaml wandb pillow scipy flow_vis h5py 
+    pip3 install --no-cache-dir xformers==0.0.27.post2 onnx
+    pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cu121
+    pip3 install --no-cache-dir jaxtyping>=0.3.2 typeguard==2.13.3
+
+%runscript
+    cd /workspace
+    exec "$@"
