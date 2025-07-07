@@ -22,3 +22,5 @@ h5py
 xformers==0.0.27.post2
 # tensorrt
 onnx
+jaxtyping>=0.3.2
+typeguard==2.13.3
