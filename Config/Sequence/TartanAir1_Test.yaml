@@ -1,7 +1,7 @@
 -   type: TartanAir_NoIMU
     name: SE000
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE000
+        root: /data/tartan_test/stereo/SE000
         compressed: true
         gtDepth: false
         gtPose: true
@@ -9,7 +9,7 @@
 -   type: TartanAir_NoIMU
     name: SE001
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE001
+        root: /data/tartan_test/stereo/SE001
         compressed: true
         gtDepth: false
         gtPose: true
@@ -17,7 +17,7 @@
 -   type: TartanAir_NoIMU
     name: SE002
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE002
+        root: /data/tartan_test/stereo/SE002
         compressed: true
         gtDepth: false
         gtPose: true
@@ -25,7 +25,7 @@
 -   type: TartanAir_NoIMU
     name: SE003
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE003
+        root: /data/tartan_test/stereo/SE003
         compressed: true
         gtDepth: false
         gtPose: true
@@ -33,7 +33,7 @@
 -   type: TartanAir_NoIMU
     name: SE004
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE004
+        root: /data/tartan_test/stereo/SE004
         compressed: true
         gtDepth: false
         gtPose: true
@@ -41,7 +41,7 @@
 -   type: TartanAir_NoIMU
     name: SE005
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE005
+        root: /data/tartan_test/stereo/SE005
         compressed: true
         gtDepth: false
         gtPose: true
@@ -49,7 +49,7 @@
 -   type: TartanAir_NoIMU
     name: SE006
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE006
+        root: /data/tartan_test/stereo/SE006
         compressed: true
         gtDepth: false
         gtPose: true
@@ -57,7 +57,7 @@
 -   type: TartanAir_NoIMU
     name: SE007
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SE007
+        root: /data/tartan_test/stereo/SE007
         compressed: true
         gtDepth: false
         gtPose: true
@@ -65,7 +65,7 @@
 -   type: TartanAir_NoIMU
     name: SH000
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH000
+        root: /data/tartan_test/stereo/SH000
         compressed: true
         gtDepth: false
         gtPose: true
@@ -73,7 +73,7 @@
 -   type: TartanAir_NoIMU
     name: SH001
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH001
+        root: /data/tartan_test/stereo/SH001
         compressed: true
         gtDepth: false
         gtPose: true
@@ -81,7 +81,7 @@
 -   type: TartanAir_NoIMU
     name: SH002
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH002
+        root: /data/tartan_test/stereo/SH002
         compressed: true
         gtDepth: false
         gtPose: true
@@ -89,7 +89,7 @@
 -   type: TartanAir_NoIMU
     name: SH003
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH003
+        root: /data/tartan_test/stereo/SH003
         compressed: true
         gtDepth: false
         gtPose: true
@@ -97,7 +97,7 @@
 -   type: TartanAir_NoIMU
     name: SH004
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH004
+        root: /data/tartan_test/stereo/SH004
         compressed: true
         gtDepth: false
         gtPose: true
@@ -105,7 +105,7 @@
 -   type: TartanAir_NoIMU
     name: SH005
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH005
+        root: /data/tartan_test/stereo/SH005
         compressed: true
         gtDepth: false
         gtPose: true
@@ -113,7 +113,7 @@
 -   type: TartanAir_NoIMU
     name: SH006
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH006
+        root: /data/tartan_test/stereo/SH006
         compressed: true
         gtDepth: false
         gtPose: true
@@ -121,7 +121,7 @@
 -   type: TartanAir_NoIMU
     name: SH007
     args:
-        root: /mnt/home/clin/ceph/dataset/tartan_test/stereo/SH007
+        root: /data/tartan_test/stereo/SH007
         compressed: true
         gtDepth: false
         gtPose: true

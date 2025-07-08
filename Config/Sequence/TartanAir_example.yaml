@@ -1,7 +1,7 @@
 type: TartanAir_NoIMU
 name: P001
 args:
-  root: /mnt/home/clin/ceph/dataset/tartan_v1/P001
+  root: /data/tartan_v1/P001
   # Controls optional data sources
   gtDepth: false
   gtFlow: false
