@@ -10,7 +10,7 @@ from Evaluation.EvalSeq import EvaluateSequences
 from Odometry.MACVO import MACVO
 
 from Utility.Config import load_config, asNamespace
-from Utility.PrettyPrint import print_as_table, ColoredTqdm, Logger
+from Utility.PrettyPrint import print_as_table, ColoredTqdm, Logger, save_as_csv
 from Utility.Sandbox import Sandbox
 from Utility.Visualize import fig_plt, rr_plt
 from Utility.Timer import Timer
@@ -156,3 +156,7 @@ if __name__ == "__main__":
     if not args.noeval:
         header, result = EvaluateSequences([str(exp_space.folder)], correct_scale=False)
         print_as_table(header, result)
+        
+        # Always save evaluation results to the default path
+        eval_csv_path = exp_space.path("evaluation.csv")
+        save_as_csv(header, result, str(eval_csv_path))
