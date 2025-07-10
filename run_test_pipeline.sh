@@ -15,7 +15,7 @@ args:
     root: /data/tartan_test/stereo/${SEQ}
     compressed: true
     gtDepth: false
-    gtPose: false
+    gtPose: true
     gtFlow: false
 EOF
     
