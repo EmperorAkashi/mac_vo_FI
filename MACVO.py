@@ -4,6 +4,7 @@ import rerun as rr
 import numpy as np
 import pypose as pp
 from pathlib import Path
+from types import MethodType
 
 from DataLoader import SequenceBase, StereoFrame, smart_transform
 from Evaluation.EvalSeq import EvaluateSequences
@@ -14,7 +15,7 @@ from Utility.PrettyPrint import print_as_table, ColoredTqdm, Logger, save_as_csv
 from Utility.Sandbox import Sandbox
 from Utility.Visualize import fig_plt, rr_plt
 from Utility.Timer import Timer
-
+from Utility.MetricsCollector import FrameMetricsCollector
 
 def VisualizeRerunCallback(frame: StereoFrame, system: MACVO, pb: ColoredTqdm):
     rr.set_time_sequence("frame_idx", frame.frame_idx)
@@ -123,10 +124,52 @@ if __name__ == "__main__":
     
     Timer.setup(active=args.timing)
     fig_plt.default_mode = "image" if args.saveplt else "none"
+    
+    # Initialize metrics collector
+    metrics_collector = FrameMetricsCollector(exp_space.folder)
+    
+    # Store frame metrics during processing
+    frame_metrics_buffer = {}
 
     def onFrameFinished(frame: StereoFrame, system: MACVO, pb: ColoredTqdm):
         VisualizeRerunCallback(frame, system, pb)
         VisualizeVRAMUsage(frame, system, pb)
+        
+        # Collect metrics for the current frame
+        try:
+            # Get the latest frame data
+            frame_idx = frame.frame_idx
+            timestamp = frame.timestamp if hasattr(frame, 'timestamp') else frame_idx
+            
+            # Get the latest frontend outputs if available
+            flow_data = None
+            stereo_data = None
+            if hasattr(system, 'Frontend') and hasattr(system, 'prev_keyframe'):
+                if system.prev_keyframe is not None and len(system.prev_keyframe) > 2:
+                    stereo_data = system.prev_keyframe[2]  # depth1 from prev_keyframe
+            
+            # Get point filtering statistics
+            filtering_stats = None
+            if frame_idx in frame_metrics_buffer:
+                filtering_stats = frame_metrics_buffer[frame_idx].get('filtering_stats')
+            
+            # Get 3D point covariances if available
+            point3d_covs = None
+            if system.graph and system.graph.points and 'cov_Tw' in system.graph.points.data:
+                point3d_covs = system.graph.points.data['cov_Tw'].tensor
+            
+            # Record metrics
+            metrics_collector.record_frame_metrics(
+                frame_idx=frame_idx,
+                timestamp=timestamp,
+                frame=frame,
+                flow_data=flow_data,
+                stereo_data=stereo_data,
+                point3d_covs=point3d_covs,
+                filtering_stats=filtering_stats
+            )
+        except Exception as e:
+            Logger.write("warn", f"Failed to collect metrics for frame {frame.frame_idx}: {e}")
 
     # Initialize data source
     sequence = smart_transform(
@@ -138,6 +181,29 @@ if __name__ == "__main__":
         sequence = sequence.preload()
     
     system = MACVO[StereoFrame].from_config(asNamespace(exp_space.config))
+    
+    # Monkey patch the process_pair method to capture filtering statistics
+    original_process_pair = system.process_pair
+    def process_pair_with_metrics(self, frame0, frame1):
+        # Call the original method
+        result = original_process_pair(frame0, frame1)
+        
+        # Capture filtering statistics
+        if hasattr(self, 'OutlierFilter') and frame1 is not None:
+            frame_idx = frame1.frame_idx
+            if 'num_kp' in locals() and 'mask' in locals():
+                frame_metrics_buffer[frame_idx] = {
+                    'filtering_stats': {
+                        'initial_count': num_kp if 'num_kp' in locals() else 0,
+                        'final_count': mask.sum().item() if 'mask' in locals() else 0
+                    }
+                }
+        
+        return result
+    
+    # Apply the monkey patch
+    system.process_pair = MethodType(process_pair_with_metrics, system)
+    
     system.receive_frames(sequence, exp_space, on_frame_finished=onFrameFinished)
     
     rr_plt.log_trajectory("/world/est"  , torch.tensor(np.load(exp_space.path("poses.npy"))[:, 1:]))
@@ -149,6 +215,9 @@ if __name__ == "__main__":
                                 "color")
     except RuntimeError:
         Logger.write("warn", "Unable to log full pointcloud - is mapping mode on?")
+    
+    # Save the collected metrics
+    metrics_collector.save_metrics()
     
     Timer.report()
     Timer.save_elapsed(exp_space.path("elapsed_time.json"))
