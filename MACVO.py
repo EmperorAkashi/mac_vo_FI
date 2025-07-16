@@ -183,10 +183,10 @@ if __name__ == "__main__":
     system = MACVO[StereoFrame].from_config(asNamespace(exp_space.config))
     
     # Monkey patch the process_pair method to capture filtering statistics
-    original_process_pair = system.process_pair
-    def process_pair_with_metrics(self, frame0, frame1):
+    original_run_pair = system.run_pair
+    def run_pair_with_metrics(self, frame0, frame1):
         # Call the original method
-        result = original_process_pair(frame0, frame1)
+        result = original_run_pair(frame0, frame1)
         
         # Capture filtering statistics
         if hasattr(self, 'OutlierFilter') and frame1 is not None:
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         return result
     
     # Apply the monkey patch
-    system.process_pair = MethodType(process_pair_with_metrics, system)
+    system.run_pair = MethodType(run_pair_with_metrics, system)
     
     system.receive_frames(sequence, exp_space, on_frame_finished=onFrameFinished)
     
