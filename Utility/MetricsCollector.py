@@ -66,22 +66,35 @@ class FrameMetricsCollector:
                 # Calculate flow magnitude (ignoring NaNs)
                 valid_flow = ~torch.isnan(flow)
                 if valid_flow.any():
-                    flow_magnitude = torch.norm(flow[valid_flow.all(dim=1)], dim=1)
-                    metrics.update({
-                        "flow_magnitude_mean": float(flow_magnitude.mean().item()),
-                        "flow_magnitude_std": float(flow_magnitude.std().item()),
-                        "flow_coverage": float((valid_flow.all(dim=1).float().mean().item())),
-                    })
+                    # Handle B x 2 x H x W format
+                    # Reshape to make it easier to process
+                    B, C, H, W = flow.shape
+                    flow_reshaped = flow.permute(0, 2, 3, 1).reshape(-1, 2)  # Reshape to (B*H*W, 2)
+                    valid_mask = valid_flow.permute(0, 2, 3, 1).reshape(-1, 2).all(dim=1)  # Reshape to (B*H*W)
+                    
+                    if valid_mask.any():
+                        flow_magnitude = torch.norm(flow_reshaped[valid_mask], dim=1)
+                        metrics.update({
+                            "flow_magnitude_mean": float(flow_magnitude.mean().item()),
+                            "flow_magnitude_std": float(flow_magnitude.std().item()),
+                            "flow_coverage": float(valid_mask.float().mean().item()),
+                        })
                 
                 # Flow uncertainty
                 if flow_data.cov is not None:
                     cov = flow_data.cov
                     valid_cov = ~torch.isnan(cov)
                     if valid_cov.any():
-                        metrics.update({
-                            "flow_uncertainty_mean": float(cov[valid_cov].mean().item()),
-                            "flow_uncertainty_std": float(cov[valid_cov].std().item()),
-                        })
+                        # Handle B x 3 x H x W format
+                        B, C, H, W = cov.shape
+                        cov_reshaped = cov.reshape(B, C, -1)  # Reshape to (B, 3, H*W)
+                        valid_mask = valid_cov.reshape(B, C, -1).any(dim=1)  # Reshape to (B, H*W)
+                        
+                        if valid_mask.any():
+                            metrics.update({
+                                "flow_uncertainty_mean": float(cov_reshaped[valid_cov.reshape(B, C, -1)].mean().item()),
+                                "flow_uncertainty_std": float(cov_reshaped[valid_cov.reshape(B, C, -1)].std().item()),
+                            })
         
         # Stereo metrics
         if stereo_data is not None:
