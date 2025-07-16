@@ -146,14 +146,8 @@ if __name__ == "__main__":
             
             # Get flow data if available
             flow_data = None
-            if 'flow_data' in frame_data:
-                flow_dict = frame_data['flow_data']
-                # Convert dictionary to object with attributes for compatibility with MetricsCollector
-                flow_data = type('FlowData', (), {})()
-                if 'flow' in flow_dict:
-                    flow_data.flow = flow_dict['flow']
-                if 'cov' in flow_dict:
-                    flow_data.cov = flow_dict['cov']
+            if hasattr(system, 'current_flow') and system.current_flow is not None:
+                flow_data = system.current_flow
             
             # Get stereo data if available
             stereo_data = None

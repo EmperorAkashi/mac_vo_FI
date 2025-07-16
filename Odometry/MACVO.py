@@ -71,6 +71,7 @@ class MACVO(IOdometry[T_SensorFrame], ConfigTestable):
         # [1] - Frame index (in visual map)
         # [2] - Frame stereo depth
         self.prev_keyframe: tuple[T_SensorFrame, int, Module.IStereoDepth.Output] | None = None
+        self.current_flow = None  # Store the latest flow data
         
         # Hooks
         self.on_optimize_writeback: list[MACVO.T_SYSHOOK] = []
@@ -180,6 +181,9 @@ class MACVO(IOdometry[T_SensorFrame], ConfigTestable):
         
         depth0          = self.prev_keyframe[2]
         depth1, match01 = self.Frontend.estimate_pair(frame0.stereo, frame1.stereo)
+        
+        # Store the current flow data for metrics collection
+        self.current_flow = match01
 
         # Receive optimization result from previous step (if exists) ####################
         # NOTE: should always writeback optimized pose to global map before selecting new 
