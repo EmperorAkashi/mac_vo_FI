@@ -277,10 +277,12 @@ class MACVO(IOdometry[T_SensorFrame], ConfigTestable):
         
         # Apply filtering
         mask = self.OutlierFilter.filter(match_obs, torch.device("cpu"))
-        match_obs = match_obs[mask]
         
-        # Store final count after filtering
-        final_count = len(match_obs)
+        # Store final count after filtering (count of True values in the mask)
+        final_count = mask.sum().item()
+        
+        # Apply the mask to the match observations
+        match_obs = match_obs[mask]
         
         # Store filtering statistics for metrics collection
         self.filtering_stats = {
