@@ -72,6 +72,7 @@ class MACVO(IOdometry[T_SensorFrame], ConfigTestable):
         # [2] - Frame stereo depth
         self.prev_keyframe: tuple[T_SensorFrame, int, Module.IStereoDepth.Output] | None = None
         self.current_flow = None  # Store the latest flow data
+        self.filtering_stats = None  # Store the latest filtering statistics
         
         # Hooks
         self.on_optimize_writeback: list[MACVO.T_SYSHOOK] = []
@@ -270,8 +271,22 @@ class MACVO(IOdometry[T_SensorFrame], ConfigTestable):
             "obs2_covTc"     : pos1_covTc,
         })
         assert self.OutlierFilter.verify_shape(match_obs), "The provided MatchFactor does not contain all data for outlier filter."
+        
+        # Store initial count before filtering
+        initial_count = num_kp
+        
+        # Apply filtering
         mask = self.OutlierFilter.filter(match_obs, torch.device("cpu"))
         match_obs = match_obs[mask]
+        
+        # Store final count after filtering
+        final_count = len(match_obs)
+        
+        # Store filtering statistics for metrics collection
+        self.filtering_stats = {
+            'initial_count': initial_count,
+            'final_count': final_count
+        }
         
         # Register the factor graph #####################################################
         prev_pose       = pp.SE3(self.graph.frames.data["pose"][self.prev_keyframe[1]])

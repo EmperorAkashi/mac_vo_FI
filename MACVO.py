@@ -155,7 +155,9 @@ if __name__ == "__main__":
                 stereo_data = system.prev_keyframe[2]  # depth1 from prev_keyframe
             
             # Get point filtering statistics
-            filtering_stats = frame_data.get('filtering_stats')
+            filtering_stats = None
+            if hasattr(system, 'filtering_stats') and system.filtering_stats is not None:
+                filtering_stats = system.filtering_stats
             
             # Get 3D point covariances if available
             point3d_covs = None
@@ -185,28 +187,6 @@ if __name__ == "__main__":
         sequence = sequence.preload()
     
     system = MACVO[StereoFrame].from_config(asNamespace(exp_space.config))
-    
-    # Monkey patch the process_pair method to capture filtering statistics
-    original_run_pair = system.run_pair
-    def run_pair_with_metrics(self, frame0, frame1):
-        # Call the original method
-        result = original_run_pair(frame0, frame1)
-        
-        # Capture filtering statistics
-        if hasattr(self, 'OutlierFilter') and frame1 is not None:
-            frame_idx = frame1.frame_idx
-            if 'num_kp' in locals() and 'mask' in locals():
-                frame_metrics_buffer[frame_idx] = {
-                    'filtering_stats': {
-                        'initial_count': num_kp if 'num_kp' in locals() else 0,
-                        'final_count': mask.sum().item() if 'mask' in locals() else 0
-                    }
-                }
-        
-        return result
-    
-    # Apply the monkey patch
-    system.run_pair = MethodType(run_pair_with_metrics, system)
     
     system.receive_frames(sequence, exp_space, on_frame_finished=onFrameFinished)
     
