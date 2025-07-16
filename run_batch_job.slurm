@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=macvo_run
-#SBATCH --output=macvo_run_%j.out
-#SBATCH --error=macvo_run_%j.err
+#SBATCH --output=/mnt/home/clin/macvo_slurm_logs/macvo_run_%j.out
+#SBATCH --error=/mnt/home/clin/macvo_slurm_logs/macvo_run_%j.err
 #SBATCH -p gpu
 #SBATCH -N 1
 #SBATCH --gpus=2
@@ -9,6 +9,9 @@
 #SBATCH -c 8
 #SBATCH --mem=80gb
 #SBATCH --time=16:00:00
+
+# Create logs directory
+mkdir -p /mnt/home/clin/macvo_slurm_logs
 
 # Print some information about the job
 echo "Running on host: $(hostname)"
