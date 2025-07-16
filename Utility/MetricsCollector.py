@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 
 from DataLoader import StereoFrame
-from Module.Frontend import IMatcher, IStereoDepth
+from Module.Frontend.Matching import IMatcher
+from Module.Frontend.StereoDepth import IStereoDepth
 from Utility.PrettyPrint import Logger
 
 
