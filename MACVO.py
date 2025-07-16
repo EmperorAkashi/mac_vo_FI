@@ -141,17 +141,27 @@ if __name__ == "__main__":
             frame_idx = frame.frame_idx
             timestamp = frame.timestamp if hasattr(frame, 'timestamp') else frame_idx
             
-            # Get the latest frontend outputs if available
+            # Get data from the metrics buffer
+            frame_data = frame_metrics_buffer.get(frame_idx, {})
+            
+            # Get flow data if available
             flow_data = None
+            if 'flow_data' in frame_data:
+                flow_dict = frame_data['flow_data']
+                # Convert dictionary to object with attributes for compatibility with MetricsCollector
+                flow_data = type('FlowData', (), {})()
+                if 'flow' in flow_dict:
+                    flow_data.flow = flow_dict['flow']
+                if 'cov' in flow_dict:
+                    flow_data.cov = flow_dict['cov']
+            
+            # Get stereo data if available
             stereo_data = None
-            if hasattr(system, 'Frontend') and hasattr(system, 'prev_keyframe'):
-                if system.prev_keyframe is not None and len(system.prev_keyframe) > 2:
-                    stereo_data = system.prev_keyframe[2]  # depth1 from prev_keyframe
+            if hasattr(system, 'prev_keyframe') and system.prev_keyframe is not None and len(system.prev_keyframe) > 2:
+                stereo_data = system.prev_keyframe[2]  # depth1 from prev_keyframe
             
             # Get point filtering statistics
-            filtering_stats = None
-            if frame_idx in frame_metrics_buffer:
-                filtering_stats = frame_metrics_buffer[frame_idx].get('filtering_stats')
+            filtering_stats = frame_data.get('filtering_stats')
             
             # Get 3D point covariances if available
             point3d_covs = None
@@ -169,7 +179,7 @@ if __name__ == "__main__":
                 filtering_stats=filtering_stats
             )
         except Exception as e:
-            Logger.write("warn", f"Failed to collect metrics for frame {frame.frame_idx}: {e}")
+            Logger.write("warn", f"Failed to collect metrics for frame {frame.frame_idx}: {str(e)}")
 
     # Initialize data source
     sequence = smart_transform(

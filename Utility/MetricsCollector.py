@@ -107,6 +107,18 @@ class FrameMetricsCollector:
                             "disparity_std": float(disparity[valid_disp].std().item()),
                         })
                 
+                # Disparity uncertainty
+                if hasattr(stereo_data, 'disparity_uncertainty') and stereo_data.disparity_uncertainty is not None:
+                    disp_uncertainty = stereo_data.disparity_uncertainty
+                    valid_uncertainty = ~torch.isnan(disp_uncertainty)
+                    if valid_uncertainty.any():
+                        metrics.update({
+                            "disparity_uncertainty_mean": float(disp_uncertainty[valid_uncertainty].mean().item()),
+                            "disparity_uncertainty_std": float(disp_uncertainty[valid_uncertainty].std().item()),
+                            "disparity_uncertainty_min": float(disp_uncertainty[valid_uncertainty].min().item()),
+                            "disparity_uncertainty_max": float(disp_uncertainty[valid_uncertainty].max().item()),
+                        })
+                
                 # Depth uncertainty
                 if stereo_data.cov is not None:
                     depth_cov = stereo_data.cov
