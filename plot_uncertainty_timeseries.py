@@ -20,7 +20,7 @@ def plot_uncertainty_timeseries(csv_path, output_path=None, clip_percentile=95):
         return
     
     # Create figure with 2 subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 10))
     
     # Plot 1: Flow uncertainty with axis break
     if 'flow_uncertainty_mean' in df.columns and 'flow_uncertainty_std' in df.columns:
@@ -120,6 +120,55 @@ def plot_uncertainty_timeseries(csv_path, output_path=None, clip_percentile=95):
                 ha='center', va='center', transform=ax2.transAxes)
         ax2.set_title('Point3D Uncertainty Over Time (Columns Missing)')
     
+    # Plot 3: Disparity uncertainty with axis break
+    if 'disparity_uncertainty_mean' in df.columns and 'disparity_uncertainty_std' in df.columns:
+        disparity_mask = ~(df['disparity_uncertainty_mean'].isna() | df['disparity_uncertainty_std'].isna())
+        if disparity_mask.any():
+            x = df.loc[disparity_mask, 'frame_idx']
+            mean_vals = np.sqrt(df.loc[disparity_mask, 'disparity_uncertainty_mean'])
+            std_vals = np.sqrt(df.loc[disparity_mask, 'disparity_uncertainty_std'])
+            
+            # Calculate clip threshold
+            clip_threshold = np.percentile(mean_vals, clip_percentile)
+            max_val = mean_vals.max()
+            
+            # Plot the data
+            ax3.plot(x, mean_vals, 'g-', linewidth=2, label='Disparity Uncertainty Mean')
+            ax3.fill_between(x, mean_vals - std_vals, mean_vals + std_vals, 
+                           alpha=0.3, color='green', label='±1 Std Dev')
+            
+            # Set y-axis limits and add axis break if needed
+            if max_val > clip_threshold * 2:  # Only add break if outliers are significantly larger
+                # Set main plot range to show most data clearly
+                ax3.set_ylim(0, clip_threshold * 1.1)
+                
+                # Add text to indicate axis break
+                ax3.text(0.02, 0.98, f'Axis break at {clip_threshold:.2f}\nMax value: {max_val:.2f}', 
+                        transform=ax3.transAxes, verticalalignment='top',
+                        bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.7))
+                
+                # Add break marks on y-axis
+                d = 0.015  # size of diagonal lines
+                kwargs = dict(transform=ax3.transAxes, color='k', clip_on=False)
+                ax3.plot((-d, +d), (1-d, 1+d), **kwargs)  # top-left diagonal
+                ax3.plot((-d, +d), (1-2*d, 1), **kwargs)  # top-right diagonal
+            else:
+                ax3.set_ylim(0, max_val * 1.1)
+            
+            ax3.set_title('Disparity Uncertainty Over Time')
+            ax3.set_xlabel('Frame Index')
+            ax3.set_ylabel('Disparity Uncertainty')
+            ax3.legend()
+            ax3.grid(True, alpha=0.3)
+        else:
+            ax3.text(0.5, 0.5, 'No valid disparity uncertainty data', 
+                    ha='center', va='center', transform=ax3.transAxes)
+            ax3.set_title('Disparity Uncertainty Over Time (No Data)')
+    else:
+        ax3.text(0.5, 0.5, 'Disparity uncertainty columns not found', 
+                ha='center', va='center', transform=ax3.transAxes)
+        ax3.set_title('Disparity Uncertainty Over Time (Columns Missing)')
+    
     plt.tight_layout()
     
     # Save or show plot
@@ -128,7 +177,6 @@ def plot_uncertainty_timeseries(csv_path, output_path=None, clip_percentile=95):
         print(f"Plot saved to: {output_path}")
     else:
         plt.show()
-
 
 def main():
     parser = argparse.ArgumentParser(description="Plot flow and point3d uncertainty time series with axis breaks")
